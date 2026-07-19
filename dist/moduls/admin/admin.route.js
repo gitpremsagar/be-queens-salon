@@ -1,0 +1,20 @@
+import { Router } from "express";
+import { authenticate, authorize } from "../../middleware/auth.middleware.js";
+import { adminCreateService, adminDeleteService, adminListServices, adminUpdateService, } from "../services/service.controller.js";
+import { adminCreateOffer, adminDeleteOffer, adminListOffers, adminUpdateOffer, } from "../offers/offer.controller.js";
+import { adminListAppointments, adminStats, adminUpdateAppointment, } from "../appointments/appointment.controller.js";
+const router = Router();
+router.use(authenticate, authorize("ADMIN"));
+router.get("/stats", adminStats);
+router.get("/services", adminListServices);
+router.post("/services", adminCreateService);
+router.patch("/services/:id", adminUpdateService);
+router.delete("/services/:id", adminDeleteService);
+router.get("/offers", adminListOffers);
+router.post("/offers", adminCreateOffer);
+router.patch("/offers/:id", adminUpdateOffer);
+router.delete("/offers/:id", adminDeleteOffer);
+router.get("/appointments", adminListAppointments);
+router.patch("/appointments/:id", adminUpdateAppointment);
+export default router;
+//# sourceMappingURL=admin.route.js.map
