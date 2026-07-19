@@ -6,7 +6,17 @@ function requireEnv(name) {
     }
     return value;
 }
-const sameSite = (process.env.COOKIE_SAME_SITE ?? "lax");
+function normalizeOrigin(origin) {
+    return origin.replace(/\/$/, "");
+}
+/** Cross-site (FE and API on different hosts) needs SameSite=None + Secure. */
+const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+const sameSiteEnv = process.env.COOKIE_SAME_SITE?.toLowerCase();
+const sameSite = (sameSiteEnv ??
+    (isProduction ? "none" : "lax"));
+const secure = process.env.COOKIE_SECURE !== undefined
+    ? process.env.COOKIE_SECURE === "true"
+    : isProduction || sameSite === "none";
 export const authConfig = {
     accessTokenSecret: requireEnv("JWT_ACCESS_SECRET"),
     refreshTokenSecret: requireEnv("JWT_REFRESH_SECRET"),
@@ -16,10 +26,12 @@ export const authConfig = {
         name: process.env.REFRESH_TOKEN_COOKIE_NAME ?? "refreshToken",
         maxAgeMs: Number(process.env.REFRESH_TOKEN_COOKIE_MAX_AGE_MS ?? 7 * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        secure: process.env.COOKIE_SECURE === "true",
+        secure,
         sameSite,
+        /** Required for cross-site cookies in Chromium when FE ≠ API host. */
+        partitioned: sameSite === "none",
         path: "/auth",
     },
-    clientOrigin: process.env.CLIENT_ORIGIN ?? "http://localhost:3000",
+    clientOrigin: normalizeOrigin(process.env.CLIENT_ORIGIN ?? "http://localhost:3000"),
 };
 //# sourceMappingURL=auth.config.js.map

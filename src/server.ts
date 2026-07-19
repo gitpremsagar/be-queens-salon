@@ -13,10 +13,13 @@ import { getSalonInfo } from "./moduls/appointments/appointment.controller.js";
 
 const app = express();
 
+// Vercel / reverse proxies terminate TLS; needed for Secure cookies
+app.set("trust proxy", 1);
+
 app.use(
   cors({
     origin: authConfig.clientOrigin,
-    methods: ["GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   }),

@@ -10,6 +10,8 @@ export declare const authConfig: {
         readonly httpOnly: true;
         readonly secure: boolean;
         readonly sameSite: "strict" | "lax" | "none";
+        /** Required for cross-site cookies in Chromium when FE ≠ API host. */
+        readonly partitioned: boolean;
         readonly path: "/auth";
     };
     readonly clientOrigin: string;

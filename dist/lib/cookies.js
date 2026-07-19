@@ -1,13 +1,18 @@
 import { authConfig } from "../config/auth.config.js";
-export function setRefreshTokenCookie(res, token) {
+function refreshCookieOptions() {
     const { refreshCookie } = authConfig;
-    res.cookie(refreshCookie.name, token, {
+    return {
         httpOnly: refreshCookie.httpOnly,
         secure: refreshCookie.secure,
         sameSite: refreshCookie.sameSite,
         path: refreshCookie.path,
         maxAge: refreshCookie.maxAgeMs,
-    });
+        ...(refreshCookie.partitioned ? { partitioned: true } : {}),
+    };
+}
+export function setRefreshTokenCookie(res, token) {
+    const { refreshCookie } = authConfig;
+    res.cookie(refreshCookie.name, token, refreshCookieOptions());
 }
 export function clearRefreshTokenCookie(res) {
     const { refreshCookie } = authConfig;
@@ -16,6 +21,7 @@ export function clearRefreshTokenCookie(res) {
         secure: refreshCookie.secure,
         sameSite: refreshCookie.sameSite,
         path: refreshCookie.path,
+        ...(refreshCookie.partitioned ? { partitioned: true } : {}),
     });
 }
 //# sourceMappingURL=cookies.js.map
