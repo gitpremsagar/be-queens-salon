@@ -122,13 +122,19 @@ export async function refresh(req, res) {
         });
         if (!stored || stored.userId !== payload.sub || stored.expiresAt < new Date()) {
             if (stored) {
-                await prisma.refreshToken.delete({ where: { id: stored.id } }).catch(() => { });
+                await prisma.refreshToken.deleteMany({ where: { id: stored.id } });
             }
             clearRefreshTokenCookie(res);
             res.status(401).json({ error: "Invalid or expired refresh token" });
             return;
         }
-        await prisma.refreshToken.delete({ where: { id: stored.id } });
+        // deleteMany avoids P2025 when concurrent refreshes race on the same token
+        const deleted = await prisma.refreshToken.deleteMany({ where: { id: stored.id } });
+        if (deleted.count === 0) {
+            clearRefreshTokenCookie(res);
+            res.status(401).json({ error: "Invalid or expired refresh token" });
+            return;
+        }
         const accessToken = await issueTokenPair(res, stored.user);
         res.json({
             accessToken,
